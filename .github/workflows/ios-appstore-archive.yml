@@ -65,8 +65,8 @@ jobs:
           }
           trap cleanup_temp_files EXIT
 
-          printf '%s' "$IOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$certificate_path"
-          printf '%s' "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$profile_path"
+          printf '%s' "$IOS_CERTIFICATE_P12_BASE64" | base64 -D > "$certificate_path"
+          printf '%s' "$IOS_PROVISIONING_PROFILE_BASE64" | base64 -D > "$profile_path"
           /usr/bin/security cms -D -i "$profile_path" > "$decoded_profile"
 
           application_identifier=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$decoded_profile")
