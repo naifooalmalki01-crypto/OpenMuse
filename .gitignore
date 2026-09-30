@@ -6,6 +6,19 @@ build/
 .env.local
 .env.*.local
 .openmuse/
+# Apple signing materials (never commit these files)
+*.cer
+*.p12
+*.pfx
+*.mobileprovision
+*.provisionprofile
+*.certSigningRequest
+*.p8
+*.pem
+*.key
+# Signed iOS build outputs
+*.ipa
+*.xcarchive/
 apps/mobile/ios/
 apps/mobile/android/
 .DS_Store
