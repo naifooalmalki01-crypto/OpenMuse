@@ -7,7 +7,7 @@
     "orientation": "default",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "ios": { "supportsTablet": true, "bundleIdentifier": "app.openmuse.mobile" },
+    "ios": { "supportsTablet": true, "bundleIdentifier": "app.rain8097.diamond3440" },
     "android": { "package": "app.openmuse.mobile" },
     "web": { "bundler": "metro", "name": "OpenMuse — a little room for everything" },
     "plugins": [

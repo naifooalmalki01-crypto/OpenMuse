@@ -1,4 +1,4 @@
-name: iOS App Store archive (manual)
+name: iOS Ad Hoc archive (manual)
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ios-appstore-archive-${{ github.ref }}
+  group: ios-ad-hoc-archive-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -43,14 +43,14 @@ jobs:
           [[ -n "$IOS_CERTIFICATE_PASSWORD" ]] || { echo "::error::Missing secret IOS_CERTIFICATE_PASSWORD"; exit 1; }
           [[ -n "$IOS_PROVISIONING_PROFILE_BASE64" ]] || { echo "::error::Missing secret IOS_PROVISIONING_PROFILE_BASE64"; exit 1; }
 
-      - name: Install signing certificate and App Store profile
+      - name: Install signing certificate and Ad Hoc profile
         id: signing
         shell: bash
         env:
           IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-          BUNDLE_ID: app.openmuse.mobile
+          BUNDLE_ID: app.rain8097.diamond3440
         run: |
           set -euo pipefail
           umask 077
@@ -78,8 +78,12 @@ jobs:
 
           get_task_allow=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:get-task-allow' "$decoded_profile" 2>/dev/null || true)
           provisions_all_devices=$(/usr/libexec/PlistBuddy -c 'Print :ProvisionsAllDevices' "$decoded_profile" 2>/dev/null || true)
-          if [[ "$get_task_allow" != "false" ]] || [[ "$provisions_all_devices" == "true" ]] || /usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices:0' "$decoded_profile" >/dev/null 2>&1; then
-            echo "::error::A non-development App Store provisioning profile is required"
+          if [[ "$get_task_allow" != "false" ]] || [[ "$provisions_all_devices" == "true" ]]; then
+            echo "::error::A non-development Ad Hoc provisioning profile is required"
+            exit 1
+          fi
+          if ! /usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices:0' "$decoded_profile" >/dev/null 2>&1; then
+            echo "::error::An Ad Hoc provisioning profile with registered devices is required"
             exit 1
           fi
 
@@ -115,7 +119,7 @@ jobs:
         env:
           TEAM_ID: ${{ steps.signing.outputs.team_id }}
           PROFILE_UUID: ${{ steps.signing.outputs.profile_uuid }}
-          BUNDLE_ID: app.openmuse.mobile
+          BUNDLE_ID: app.rain8097.diamond3440
         run: |
           set -euo pipefail
           mkdir -p artifacts/ios
@@ -141,7 +145,7 @@ jobs:
           <dict/>
           </plist>
           PLIST
-          /usr/libexec/PlistBuddy -c 'Add :method string app-store-connect' "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :method string ad-hoc' "$export_options"
           /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" "$export_options"
           /usr/libexec/PlistBuddy -c 'Add :signingStyle string manual' "$export_options"
           /usr/libexec/PlistBuddy -c 'Add :provisioningProfiles dict' "$export_options"
@@ -158,7 +162,7 @@ jobs:
       - name: Upload build artifacts (no App Store submission)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: openmuse-ios-appstore-archive
+          name: openmuse-ios-ad-hoc-archive
           path: |
             artifacts/ios/OpenMuse.xcarchive
             artifacts/ios/exported/OpenMuse.ipa
